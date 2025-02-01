@@ -1,6 +1,6 @@
 {
   "name": "imagment",
-  "version": "0.0.3",
+  "version": "0.0.4",
   "description": "Configurable image review that returns segments of the image",
   "main": "src/index.js",
   "type": "module",
