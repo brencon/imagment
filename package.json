@@ -6,9 +6,9 @@
   "type": "module",
   "scripts": {
     "test": "mocha",
-    "release:patch": "npm version patch && git push && git push --tags",
-    "release:minor": "npm version minor && git push && git push --tags",
-    "release:major": "npm version major && git push && git push --tags"
+    "release:patch": "git push --set-upstream origin main && npm version patch && git push && git push --tags",
+    "release:minor": "git push --set-upstream origin main && npm version minor && git push && git push --tags",
+    "release:major": "git push --set-upstream origin main && npm version major && git push && git push --tags"
   },
   "repository": {
     "type": "git",
