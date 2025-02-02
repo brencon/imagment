@@ -1,11 +1,11 @@
 // test/logging.test.js
-
 import { expect } from 'chai';
-import { slice, LogLevel } from '../src/index.js';
+import { slice } from '../src/index.js';
+import { LogLevel } from '../src/logger.js';
 import sharp from 'sharp';
 import nock from 'nock';
 
-describe.only('logging', () => {
+describe('logging', () => {
   it('should log error when url is invalid with ERROR level', async () => {
     const consoleOutputs = [];
     const mockConsole = {
@@ -57,10 +57,9 @@ describe.only('logging', () => {
     try {
       await slice('not-a-url', { logLevel: LogLevel.INFO });
     } catch (error) {
-      expect(consoleOutputs).to.have.lengthOf(2);
-      expect(consoleOutputs[0].level).to.equal('info');
-      expect(consoleOutputs[0].message[0]).to.equal('Processing URL:');
-      expect(consoleOutputs[1].level).to.equal('error');
+      expect(consoleOutputs).to.have.lengthOf(1);
+      expect(consoleOutputs[0].level).to.equal('error');
+      expect(consoleOutputs[0].message[0]).to.equal('Invalid URL format');
     }
     
     Object.assign(console, originalConsole);
@@ -159,10 +158,8 @@ describe.only('logging', () => {
     try {
       await slice('https://example.com/test.jpg', { 
         logLevel: LogLevel.WARN,
-        enhance: { zoom: -1 }  // Invalid zoom value
+        enhance: { zoom: -1 }
       });
-      
-      console.log('Captured outputs:', JSON.stringify(consoleOutputs, null, 2));
       
       expect(consoleOutputs.some(log => 
         log.level === 'warn' && 

@@ -2,54 +2,12 @@
 
 import sharp from 'sharp';
 import fetch from 'node-fetch';
+import { validateImageUrl } from './url-validator.js';
+import { LogLevel, log } from './logger.js';
 
-export const LogLevel = {
-  NONE: 0,
-  ERROR: 1,
-  WARN: 2,
-  INFO: 3,
-  DEBUG: 4,
-  VERBOSE: 5
-};
-
-const log = (level, message, data, options) => {
-  if (!options?.logLevel || level > options.logLevel) return;
-  
-  // Log level check was backwards - fix the condition
-  if (options.logLevel >= level) {
-    switch (level) {
-      case LogLevel.ERROR:
-        console.error(message, data || '');
-        break;
-      case LogLevel.WARN:
-        console.warn(message, data || '');
-        break;
-      case LogLevel.INFO:
-        console.log(message, data || '');
-        break;
-      case LogLevel.DEBUG:
-      case LogLevel.VERBOSE:
-        console.debug(message, data || '');
-        break;
-    }
-  }
-};
-
-// Rest of slice implementation remains the same
 export const slice = async (imageUrl, options = {}) => {
-  if (!imageUrl) {
-    log(LogLevel.ERROR, 'Image URL is required', null, options);
-    throw new Error('Image URL is required');
-  }
-
+  validateImageUrl(imageUrl, options);
   log(LogLevel.INFO, 'Processing URL:', imageUrl, options);
-
-  try {
-    new URL(imageUrl);
-  } catch {
-    log(LogLevel.ERROR, 'Invalid URL format', null, options);
-    throw new Error('Invalid URL format');
-  }
 
   log(LogLevel.DEBUG, 'Loading image...', null, options);
   const response = await fetch(imageUrl);
