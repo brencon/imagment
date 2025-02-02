@@ -27,9 +27,12 @@
   "homepage": "https://github.com/brencon/imagment#readme",
   "devDependencies": {
     "chai": "^5.1.2",
-    "mocha": "^11.1.0"
+    "chai-as-promised": "^8.0.1",
+    "mocha": "^11.1.0",
+    "nock": "^14.0.0"
   },
   "dependencies": {
+    "node-fetch": "^3.3.2",
     "sharp": "^0.33.5"
   }
 }
