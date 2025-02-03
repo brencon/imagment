@@ -5,7 +5,8 @@
   "main": "src/index.js",
   "type": "module",
   "scripts": {
-    "test": "mocha",
+    "test": "c8 mocha",
+    "coverage": "c8 --reporter=html --reporter=text mocha",
     "release:patch": "git push --set-upstream origin main && npm version patch && git push && git push --tags",
     "release:minor": "git push --set-upstream origin main && npm version minor && git push && git push --tags",
     "release:major": "git push --set-upstream origin main && npm version major && git push && git push --tags"
@@ -26,10 +27,10 @@
   },
   "homepage": "https://github.com/brencon/imagment#readme",
   "devDependencies": {
+    "c8": "^10.1.3",
     "chai": "^5.1.2",
     "chai-as-promised": "^8.0.1",
-    "mocha": "^11.1.0",
-    "nock": "^14.0.0"
+    "mocha": "^11.1.0"
   },
   "dependencies": {
     "node-fetch": "^3.3.2",
