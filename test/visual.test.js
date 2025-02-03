@@ -4,10 +4,10 @@ import fs from 'fs/promises';
 import path from 'path';
 import { slice } from '../src/index.js';
 import sharp from 'sharp';
+import { generateOutputPath } from '../src/path-generator.js';
 
 describe('Visual Segment Tests', () => {
   const imageUrl = 'https://media.mycomicshop.com/n_ii/originalimage/7794643.jpg';
-  const outputDir = path.resolve('./test/output/segments');
 
   const options = {
     logLevel: 'NONE',
@@ -17,11 +17,10 @@ describe('Visual Segment Tests', () => {
     }
   };
 
-  beforeEach(async () => {
-    await fs.mkdir(outputDir, { recursive: true });
-  });
-
   it('should create visible segments', async () => {
+    const outputDir = path.join('./test/output/segments', generateOutputPath(imageUrl));
+    await fs.mkdir(outputDir, { recursive: true });
+    
     const { segments } = await slice(imageUrl, options);
 
     for (let index = 0; index < segments.length; index++) {
