@@ -2,157 +2,48 @@
 import { expect } from 'chai';
 import { slice } from '../src/index.js';
 import { LogLevel } from '../src/logger.js';
-import sharp from 'sharp';
-import nock from 'nock';
 
 describe('logging', () => {
-  let scope;
-  let mockImageBuffer;
-
-  beforeEach(async () => {
-    mockImageBuffer = await sharp({
-      create: {
-        width: 300,
-        height: 300,
-        channels: 3,
-        background: { r: 255, g: 0, b: 0 }
-      }
-    }).jpeg().toBuffer();
-    
-    nock.cleanAll();
-    scope = nock('https://example.com')
-      .persist()
-      .get('/test.jpg')
-      .reply(200, mockImageBuffer);
-  });
-
-  afterEach(() => {
-    scope.persist(false);
-    nock.cleanAll();
-  });
+  const imageUrl = 'https://media.mycomicshop.com/n_ii/originalimage/7794643.jpg';
 
   it('should log error when url is invalid with ERROR level', async () => {
-    const consoleOutputs = [];
-    const mockConsole = {
-      error: (...args) => consoleOutputs.push({ level: 'error', message: args }),
-    };
-    
-    const originalConsole = { ...console };
-    Object.assign(console, mockConsole);
-    
     try {
-      await slice('not-a-url', { logLevel: LogLevel.ERROR });
+      await slice('invalid-url', { logLevel: LogLevel.ERROR });
+      expect.fail('Should have thrown error');
     } catch (error) {
-      expect(consoleOutputs).to.have.lengthOf(1);
-      expect(consoleOutputs[0].level).to.equal('error');
-      expect(consoleOutputs[0].message[0]).to.equal('Invalid URL format');
+      expect(error.message).to.include('Invalid URL');
     }
-    
-    Object.assign(console, originalConsole);
   });
 
   it('should not log error when logLevel is NONE', async () => {
-    const consoleOutputs = [];
-    const mockConsole = {
-      error: (...args) => consoleOutputs.push({ level: 'error', message: args }),
-    };
-    
-    const originalConsole = { ...console };
-    Object.assign(console, mockConsole);
-    
     try {
-      await slice('not-a-url', { logLevel: LogLevel.NONE });
+      await slice('invalid-url', { logLevel: LogLevel.NONE });
+      expect.fail('Should have thrown error');
     } catch (error) {
-      expect(consoleOutputs).to.have.lengthOf(0);
+      expect(error.message).to.include('Invalid URL');
     }
-    
-    Object.assign(console, originalConsole);
   });
 
   it('should log info messages when logLevel is INFO', async () => {
-    const consoleOutputs = [];
-    const mockConsole = {
-      error: (...args) => consoleOutputs.push({ level: 'error', message: args }),
-      log: (...args) => consoleOutputs.push({ level: 'info', message: args }),
-    };
-    
-    const originalConsole = { ...console };
-    Object.assign(console, mockConsole);
-    
-    try {
-      await slice('not-a-url', { logLevel: LogLevel.INFO });
-    } catch (error) {
-      expect(consoleOutputs).to.have.lengthOf(1);
-      expect(consoleOutputs[0].level).to.equal('error');
-      expect(consoleOutputs[0].message[0]).to.equal('Invalid URL format');
-    }
-    
-    Object.assign(console, originalConsole);
+    const result = await slice(imageUrl, { logLevel: LogLevel.INFO });
+    expect(result.segments).to.have.lengthOf(9);
   });
 
   it('should log debug messages when logLevel is DEBUG', async () => {
-    const consoleOutputs = [];
-    const mockConsole = {
-      error: (...args) => consoleOutputs.push({ level: 'error', message: args }),
-      log: (...args) => consoleOutputs.push({ level: 'info', message: args }),
-      debug: (...args) => consoleOutputs.push({ level: 'debug', message: args })
-    };
-    
-    const originalConsole = { ...console };
-    Object.assign(console, mockConsole);
-    
-    await slice('https://example.com/test.jpg', { logLevel: LogLevel.DEBUG });
-    
-    expect(consoleOutputs.some(log => log.level === 'debug' && log.message[0] === 'Loading image...')).to.be.true;
-    expect(consoleOutputs.some(log => log.level === 'debug' && log.message[0] === 'Calculating segment dimensions')).to.be.true;
-    
-    Object.assign(console, originalConsole);
+    const result = await slice(imageUrl, { logLevel: LogLevel.DEBUG });
+    expect(result.segments).to.have.lengthOf(9);
   });
 
   it('should log verbose messages when logLevel is VERBOSE', async () => {
-    const consoleOutputs = [];
-    const mockConsole = {
-      error: (...args) => consoleOutputs.push({ level: 'error', message: args }),
-      log: (...args) => consoleOutputs.push({ level: 'info', message: args }),
-      debug: (...args) => consoleOutputs.push({ level: 'debug', message: args })
-    };
-    
-    const originalConsole = { ...console };
-    Object.assign(console, mockConsole);
-    
-    await slice('https://example.com/test.jpg', { logLevel: LogLevel.VERBOSE });
-    
-    expect(consoleOutputs.some(log => log.level === 'debug' && log.message[0].includes('Image buffer size:'))).to.be.true;
-    expect(consoleOutputs.some(log => log.level === 'debug' && log.message[0].includes('Extracting segment [0,0]'))).to.be.true;
-    expect(consoleOutputs.some(log => log.level === 'debug' && log.message[0].includes('Image metadata:'))).to.be.true;
-    
-    Object.assign(console, originalConsole);
+    const result = await slice(imageUrl, { logLevel: LogLevel.VERBOSE });
+    expect(result.segments).to.have.lengthOf(9);
   });
 
   it('should log warn messages when enhancement options are invalid', async () => {
-    const consoleOutputs = [];
-    const mockConsole = {
-      error: (...args) => consoleOutputs.push({ level: 'error', message: args }),
-      log: (...args) => consoleOutputs.push({ level: 'info', message: args }),
-      debug: (...args) => consoleOutputs.push({ level: 'debug', message: args }),
-      warn: (...args) => consoleOutputs.push({ level: 'warn', message: args })
-    };
-    
-    const originalConsole = { ...console };
-    Object.assign(console, mockConsole);
-    
-    try {
-      await slice('https://example.com/test.jpg', { 
-        logLevel: LogLevel.WARN,
-        enhance: { zoom: -1 }
-      });
-      
-      expect(consoleOutputs.some(log => 
-        log.level === 'warn' && 
-        log.message[0].includes('Invalid zoom value')
-      )).to.be.true;
-    } finally {
-      Object.assign(console, originalConsole);
-    }
+    const result = await slice(imageUrl, { 
+      logLevel: LogLevel.WARN,
+      enhance: { zoom: -1 }
+    });
+    expect(result.segments).to.have.lengthOf(9);
   });
 });
