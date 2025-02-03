@@ -6,6 +6,31 @@ import sharp from 'sharp';
 import nock from 'nock';
 
 describe('logging', () => {
+  let scope;
+  let mockImageBuffer;
+
+  beforeEach(async () => {
+    mockImageBuffer = await sharp({
+      create: {
+        width: 300,
+        height: 300,
+        channels: 3,
+        background: { r: 255, g: 0, b: 0 }
+      }
+    }).jpeg().toBuffer();
+    
+    nock.cleanAll();
+    scope = nock('https://example.com')
+      .persist()
+      .get('/test.jpg')
+      .reply(200, mockImageBuffer);
+  });
+
+  afterEach(() => {
+    scope.persist(false);
+    nock.cleanAll();
+  });
+
   it('should log error when url is invalid with ERROR level', async () => {
     const consoleOutputs = [];
     const mockConsole = {
@@ -75,19 +100,6 @@ describe('logging', () => {
     
     const originalConsole = { ...console };
     Object.assign(console, mockConsole);
-
-    const mockImageBuffer = await sharp({
-      create: {
-        width: 300,
-        height: 300,
-        channels: 3,
-        background: { r: 255, g: 0, b: 0 }
-      }
-    }).jpeg().toBuffer();
-
-    nock('https://example.com')
-      .get('/test.jpg')
-      .reply(200, mockImageBuffer);
     
     await slice('https://example.com/test.jpg', { logLevel: LogLevel.DEBUG });
     
@@ -107,19 +119,6 @@ describe('logging', () => {
     
     const originalConsole = { ...console };
     Object.assign(console, mockConsole);
-
-    const mockImageBuffer = await sharp({
-      create: {
-        width: 300,
-        height: 300,
-        channels: 3,
-        background: { r: 255, g: 0, b: 0 }
-      }
-    }).jpeg().toBuffer();
-
-    nock('https://example.com')
-      .get('/test.jpg')
-      .reply(200, mockImageBuffer);
     
     await slice('https://example.com/test.jpg', { logLevel: LogLevel.VERBOSE });
     
@@ -141,19 +140,6 @@ describe('logging', () => {
     
     const originalConsole = { ...console };
     Object.assign(console, mockConsole);
-
-    const mockImageBuffer = await sharp({
-      create: {
-        width: 300,
-        height: 300,
-        channels: 3,
-        background: { r: 255, g: 0, b: 0 }
-      }
-    }).jpeg().toBuffer();
-
-    nock('https://example.com')
-      .get('/test.jpg')
-      .reply(200, mockImageBuffer);
     
     try {
       await slice('https://example.com/test.jpg', { 
