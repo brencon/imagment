@@ -3,7 +3,9 @@
 import sharp from 'sharp';
 import fetch from 'node-fetch';
 import { promises as fs } from 'fs';
+import { Readable } from 'stream';
 import { validateImageUrl } from './url-validator.js';
+import { validateImageStream } from './stream-validator.js';
 import { validateGridSize } from './validators/grid-size.js';
 import { LogLevel, log } from './logger.js';
 
@@ -96,7 +98,11 @@ const processImage = async (imageBuffer, options = {}) => {
 export const slice = async (input, options = {}) => {
   let imageBuffer;
 
-  if (input.startsWith('http')) {
+  if (input instanceof Readable) {
+    log(LogLevel.INFO, 'Processing stream input', null, options);
+    imageBuffer = await validateImageStream(input, options);
+    log(LogLevel.VERBOSE, 'Image buffer size:', imageBuffer.length, options);
+  } else if (input.startsWith('http')) {
     validateImageUrl(input, options);
     log(LogLevel.INFO, 'Processing URL:', input, options);
 
