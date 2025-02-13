@@ -3,11 +3,22 @@
 import sharp from 'sharp';
 import fetch from 'node-fetch';
 import { validateImageUrl } from './url-validator.js';
+import { validateGridSize } from './validators/grid-size.js';
 import { LogLevel, log } from './logger.js';
 
 export const slice = async (imageUrl, options = {}) => {
   validateImageUrl(imageUrl, options);
   log(LogLevel.INFO, 'Processing URL:', imageUrl, options);
+
+  // Validate gridSize first if provided
+  if (typeof options.gridSize !== 'undefined') {
+    log(LogLevel.DEBUG, `Validating provided grid size: ${options.gridSize}`, null, options);
+    validateGridSize(options.gridSize);
+  }
+
+  // Then set default if needed
+  const gridSize = options.gridSize || 3;
+  log(LogLevel.INFO, `Using ${gridSize}x${gridSize} grid`, null, options);
 
   log(LogLevel.DEBUG, 'Loading image...', null, options);
   const response = await fetch(imageUrl);
@@ -20,12 +31,12 @@ export const slice = async (imageUrl, options = {}) => {
   log(LogLevel.VERBOSE, 'Image metadata:', metadata, options);
 
   log(LogLevel.DEBUG, 'Calculating segment dimensions', null, options);
-  const segmentWidth = Math.floor(metadata.width / 3);
-  const segmentHeight = Math.floor(metadata.height / 3);
+  const segmentWidth = Math.floor(metadata.width / gridSize);
+  const segmentHeight = Math.floor(metadata.height / gridSize);
   
   const segments = [];
-  for (let row = 0; row < 3; row++) {
-    for (let col = 0; col < 3; col++) {
+  for (let row = 0; row < gridSize; row++) {
+    for (let col = 0; col < gridSize; col++) {
       const extractArea = {
         left: col * segmentWidth,
         top: row * segmentHeight,
@@ -54,6 +65,7 @@ export const slice = async (imageUrl, options = {}) => {
     }
   }
 
+  metadata.gridSize = gridSize;
   metadata.enhancement = {
     sharpen: options.enhance?.sharpen || false,
     zoom: options.enhance?.zoom || 1

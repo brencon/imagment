@@ -17,21 +17,25 @@ describe('Visual Segment Tests', () => {
     }
   };
 
-  it('should create visible segments', async () => {
-    const outputDir = path.join('./test/output/segments', generateOutputPath(imageUrl));
-    await fs.mkdir(outputDir, { recursive: true });
-    
-    const { segments } = await slice(imageUrl, options);
+  const gridSizes = [2, 3, 4, 5, 6];
 
-    for (let index = 0; index < segments.length; index++) {
-      const row = Math.floor(index / 3);
-      const col = index % 3;
-      await sharp(segments[index])
-        .jpeg({ quality: 100 })
-        .toFile(path.join(outputDir, `segment_${row}_${col}.jpg`));
-    }
+  for (const gridSize of gridSizes) {
+    it(`should create visible ${gridSize}x${gridSize} segments`, async () => {
+      const outputDir = path.join('./test/output/segments', `${gridSize}x${gridSize}`, generateOutputPath(imageUrl));
+      await fs.mkdir(outputDir, { recursive: true });
+      
+      const { segments } = await slice(imageUrl, { ...options, gridSize });
 
-    const files = await fs.readdir(outputDir);
-    expect(files).to.have.length(9);
-  });
+      for (let index = 0; index < segments.length; index++) {
+        const row = Math.floor(index / gridSize);
+        const col = index % gridSize;
+        await sharp(segments[index])
+          .jpeg({ quality: 100 })
+          .toFile(path.join(outputDir, `segment_${row}_${col}.jpg`));
+      }
+
+      const files = await fs.readdir(outputDir);
+      expect(files).to.have.length(gridSize * gridSize);
+    });
+  }
 });
