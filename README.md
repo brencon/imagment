@@ -11,7 +11,10 @@ npm install imagment
 ## Features
 
 - Flexible grid-based image segmentation (2x2 to 10x10)
-- Supports HTTPS image URLs
+- Multiple input sources:
+  - HTTPS image URLs
+  - Local files
+  - Readable streams
 - Image enhancement options (sharpen, zoom)
 - Detailed metadata for each operation
 - Configurable logging levels
@@ -24,14 +27,25 @@ npm install imagment
 ```javascript
 import { slice } from 'imagment';
 
-const result = await slice('https://example.com/image.jpg');
-// Returns 3x3 grid segments by default
+// From URL
+const urlResult = await slice('https://example.com/image.jpg');
+
+// From local file
+const localResult = await slice('./path/to/image.jpg');
+
+// From stream
+import { createReadStream } from 'fs';
+const stream = createReadStream('./path/to/image.jpg');
+const streamResult = await slice(stream);
+
+// All methods return 3x3 grid segments by default
 ```
 
 ### Custom Grid Size
 
 ```javascript
-const result = await slice('https://example.com/image.jpg', {
+// Works the same for all input types
+const result = await slice(input, {
   gridSize: 4 // Creates 4x4 grid (16 segments)
 });
 ```
@@ -39,7 +53,7 @@ const result = await slice('https://example.com/image.jpg', {
 ### Enhancement Options
 
 ```javascript
-const result = await slice('https://example.com/image.jpg', {
+const result = await slice(input, {
   gridSize: 2,
   enhance: {
     sharpen: true,  // Apply sharpening to segments
@@ -51,18 +65,20 @@ const result = await slice('https://example.com/image.jpg', {
 ### Configuring Log Level
 
 ```javascript
-const result = await slice('https://example.com/image.jpg', {
+const result = await slice(input, {
   logLevel: 'DEBUG' // NONE, ERROR, WARN, INFO, DEBUG, VERBOSE
 });
 ```
 
 ## API Reference
 
-### slice(imageUrl, options)
+### slice(input, options)
 
 #### Parameters
 
-- `imageUrl` (string): HTTPS URL of the image to process
+- `input`: One of:
+  - `string`: HTTPS URL or local file path
+  - `Readable`: Node.js readable stream
 - `options` (object, optional): Configuration options
   - `gridSize` (number): Size of grid (2-10, default: 3)
   - `enhance` (object): Enhancement options
@@ -97,28 +113,58 @@ Returns a Promise that resolves to an object containing:
 
 ## Validation
 
-The module performs several validations:
+The module performs several validations based on input type:
 
-- Image URL must use HTTPS protocol
+### URL Input
+- Must use HTTPS protocol
+- Must be accessible
+- Must be a valid image format
+
+### Local File Input
+- File must exist
+- Must be .jpg, .jpeg, or .png format
+
+### Stream Input
+- Must be a Readable stream
+- Must contain valid image data
+
+### Common Validations
 - Grid size must be between 2 and 10
 - Grid size must be an integer
 - Zoom value must be greater than 0
 
 ## Examples
 
+### Using Different Input Types
+
+```javascript
+import { slice } from 'imagment';
+import { createReadStream } from 'fs';
+
+// URL input
+const urlResult = await slice('https://example.com/image.jpg');
+
+// Local file input
+const localResult = await slice('./images/photo.jpg');
+
+// Stream input
+const stream = createReadStream('./images/photo.jpg');
+const streamResult = await slice(stream);
+```
+
 ### Creating Different Grid Sizes
 
 ```javascript
-// 2x2 grid
-const smallGrid = await slice(imageUrl, { gridSize: 2 });
+// 2x2 grid (works with any input type)
+const smallGrid = await slice(input, { gridSize: 2 });
 // 4 segments
 
 // 3x3 grid (default)
-const mediumGrid = await slice(imageUrl);
+const mediumGrid = await slice(input);
 // 9 segments
 
 // 4x4 grid
-const largeGrid = await slice(imageUrl, { gridSize: 4 });
+const largeGrid = await slice(input, { gridSize: 4 });
 // 16 segments
 ```
 
@@ -126,17 +172,17 @@ const largeGrid = await slice(imageUrl, { gridSize: 4 });
 
 ```javascript
 // Sharpen segments
-const sharpened = await slice(imageUrl, {
+const sharpened = await slice(input, {
   enhance: { sharpen: true }
 });
 
 // Zoom segments
-const zoomed = await slice(imageUrl, {
+const zoomed = await slice(input, {
   enhance: { zoom: 1.5 }
 });
 
 // Both sharpen and zoom
-const enhanced = await slice(imageUrl, {
+const enhanced = await slice(input, {
   enhance: {
     sharpen: true,
     zoom: 1.5
@@ -157,7 +203,7 @@ The module supports multiple log levels:
 
 ```javascript
 // Enable debug logging
-const result = await slice(imageUrl, { logLevel: 'DEBUG' });
+const result = await slice(input, { logLevel: 'DEBUG' });
 ```
 
 ## License
