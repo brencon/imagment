@@ -30,10 +30,16 @@ export const generateOutputPath = (url, options = { logLevel: LogLevel.NONE }) =
     throw new Error('Only JPG and PNG files are supported');
   }
 
-  const pathWithoutExt = decodedPath.slice(1, -ext.length);
-  const sanitizedPath = pathWithoutExt.replace(/[<>:"/\\|?*]/g, '_');
+  // First split path into segments
+  const pathSegments = decodedPath.slice(1).split('/');
   
-  const outputPath = `${hostname}_${sanitizedPath}`;
+  // Then sanitize each segment and join with hyphens
+  const processedPath = pathSegments
+    .map(segment => segment.replace(/[<>:"/\\|?*]/g, '_'))
+    .join('-')
+    .replace(/\.[^/.]+$/, '');
+  
+  const outputPath = `${hostname}-${processedPath}`;
   
   if (outputPath.length > MAX_PATH_LENGTH) {
     throw new Error(`Generated path exceeds maximum length of ${MAX_PATH_LENGTH} characters`);

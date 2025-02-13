@@ -9,19 +9,19 @@ describe('path-generator', () => {
   it('should generate correct path from url with multiple segments', () => {
     const url = 'https://media.mycomicshop.com/n_ii/originalimage/7794643.jpg';
     const result = generateOutputPath(url, options);
-    expect(result).to.equal('media.mycomicshop.com_n_ii_originalimage_7794643');
+    expect(result).to.equal('media.mycomicshop.com-n_ii-originalimage-7794643');
   });
 
   it('should handle url with single segment', () => {
     const url = 'https://example.com/image.jpg';
     const result = generateOutputPath(url, options);
-    expect(result).to.equal('example.com_image');
+    expect(result).to.equal('example.com-image');
   });
 
   it('should handle url with query parameters', () => {
     const url = 'https://example.com/image.jpg?width=100';
     const result = generateOutputPath(url, options);
-    expect(result).to.equal('example.com_image');
+    expect(result).to.equal('example.com-image');
   });
 
   it('should throw error for non-HTTPS url', () => {
@@ -45,7 +45,7 @@ describe('path-generator', () => {
   it('should sanitize unsafe characters in path', () => {
     const url = 'https://example.com/test_image_name%3C%3E%3A%22%7C%3F%2A.jpg';
     const result = generateOutputPath(url, options);
-    expect(result).to.equal('example.com_test_image_name_______');
+    expect(result).to.equal('example.com-test_image_name_______');
   });
 
   it('should throw error for extremely long paths', () => {
@@ -57,6 +57,11 @@ describe('path-generator', () => {
   it('should handle PNG extension', () => {
     const url = 'https://example.com/image.png';
     const result = generateOutputPath(url, options);
-    expect(result).to.equal('example.com_image');
+    expect(result).to.equal('example.com-image');
+  });
+
+  it('should throw error for missing file extension', () => {
+    const url = 'https://example.com/noextension';
+    expect(() => generateOutputPath(url, options)).to.throw('File extension is required');
   });
 });
