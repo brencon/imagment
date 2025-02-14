@@ -1,3 +1,5 @@
+[![Sponsor](https://img.shields.io/badge/Sponsor-💖-ff69b4)](https://github.com/sponsors/brencon)
+
 # imagment
 
 Configurable image segmentation module that retrieves, processes, and returns segments of an image. Built with sharp for high-performance image processing.
