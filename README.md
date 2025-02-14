@@ -8,6 +8,12 @@ Configurable image segmentation module that retrieves, processes, and returns se
 npm install imagment
 ```
 
+## Module Compatibility
+Supports both CommonJS (`require()`) and ES Modules (`import`).
+
+For ES Modules (import): Works natively with "type": "module".
+For CommonJS (require()): Uses a dynamic wrapper for compatibility.
+
 ## Features
 
 - Flexible grid-based image segmentation (2x2 to 10x10)
