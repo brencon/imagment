@@ -1,5 +1,3 @@
-// src/index.js
-
 import sharp from 'sharp';
 import fetch from 'node-fetch';
 import { promises as fs } from 'fs';
@@ -122,3 +120,9 @@ export const slice = async (input, options = {}) => {
 
   return processImage(imageBuffer, options);
 };
+
+// Add CommonJS compatibility
+/* c8 ignore next 3 */
+if (typeof module !== 'undefined' && module.exports) {
+  module.exports = { slice };
+}

@@ -4,6 +4,10 @@
   "description": "Configurable image review that returns segments of the image",
   "main": "src/index.js",
   "type": "module",
+  "exports": {
+    "import": "./src/index.js",
+    "require": "./src/index.cjs"
+  },
   "scripts": {
     "test": "c8 mocha",
     "coverage": "c8 --reporter=html --reporter=text mocha",
